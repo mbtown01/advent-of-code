@@ -1,5 +1,6 @@
 from collections import defaultdict
 from enum import Enum
+from itertools import permutations
 
 
 class Burrow:
@@ -29,7 +30,7 @@ class Node:
             if node not in path:
                 thisPath = path + [node]
                 if node.canStop:
-                    nodePaths[node] = thisPath
+                    nodePaths[node] = thisPath[1:]
                 node._analyzeGraph(nodePaths, thisPath)
 
     def analyzeGraph(self):
@@ -65,71 +66,55 @@ class Anthropod:
 
     ENERGY_MAP = {'A': 1, 'B': 10, 'C': 100, 'D': 1000}
 
-    def __init__(self, name: str, start: Node, destination: Node):
+    def __init__(self, name: str, location: Node, destination: Node):
         self.name = name
-        self.energySpent = 0
-        self.energyPerMove = self.ENERGY_MAP[name]
-        self.start = start
+        self.start = location
         self.destination = destination
-        self._hasMoved = False
-        self._moveInfo = dict()
 
     def __repr__(self) -> str:
-        return (f"[Anthropod '{self.name}' "
-                f"hasMoved={self._hasMoved} "
-                f"moves={len(self._moveInfo)}"
-                f"]")
+        return (f"[Anthropod '{self.name}']")
 
-    @property
-    def hasMoves(self):
-        return len(self._moveInfo) > 0
-
-    def _computeNeedsToMove(self, anthropodLocations: list):
-        if self.start != self.destination:
-            return True
-
-        southernEdgeList = list(
-            a for a in self.start.edges if a.direction == Edge.Direction.SOUTH)
-        if len(southernEdgeList) == 0:
+    def locationIsFinal(self, location: Node, anthropodLocations: list):
+        if location != self.destination:
             return False
 
-        southernNeighborIndex = southernEdgeList[0].destination.index
-        southernNeighbor = anthropodLocations[southernNeighborIndex]
-        return southernNeighbor._computeNeedsToMove(anthropodLocations)
+        southernEdgeList = list(
+            a for a in location.edges if a.direction == Edge.Direction.SOUTH)
+        if len(southernEdgeList) == 0:
+            return True
 
-    def initializeMoves(self, anthropodLocations: list):
-        if self._computeNeedsToMove(anthropodLocations):
-            hallwayNodeInfo = list(
-                a for a in self.start.nodePaths.items() if not a[0].isBurrow)
-            for hallwayNode, path1 in hallwayNodeInfo:
-                path2 = hallwayNode.nodePaths[self.destination]
-                energy = (len(path1) + len(path2) - 2) * self.energyPerMove
-                self._moveInfo[hallwayNode] = \
-                    dict(path1=path1, path2=path2, energy=energy)
-
-            # In the case where we are at our final destination but we still
-            # need to move out of the way, a straight-shot home is NOT a
-            # possible move, so filter that out
-            if self.destination in self.start.nodePaths:
-                path1 = self.start.nodePaths[self.destination]
-                energy = (len(path1) - 1) * self.energyPerMove
-                self._moveInfo[self.destination] = \
-                    dict(path1=path1, path2=None, energy=energy)
+        southernNode = southernEdgeList[0].destination
+        southernAnthropod = anthropodLocations[southernNode.index]
+        return southernAnthropod.locationIsFinal(
+            southernNode, anthropodLocations)
 
     def getAvailableMoves(self, nodes: list, anthropodLocations: list):
         location = nodes[anthropodLocations.index(self)]
-        occupiedNodes = set(
-            a for a, b in zip(nodes, anthropodLocations) if b is not None)
-        if not location.isBurrow:
-            return [self._moveInfo[location]['path2']]
+        if self.locationIsFinal(location, anthropodLocations):
+            return None
 
-        moveInfoList = sorted(list(self._moveInfo.values()),
-                              key=lambda a: a['energy'])
-        return list(a['path1'] for a in moveInfoList
-                    if len(occupiedNodes.intersection(a['path1']) == 0))
+        pathList = list(b for a, b in location.nodePaths.items()
+                        if location.isBurrow != a.isBurrow)
+        if location.isBurrow and location != self.destination:
+            pathList.append(location.nodePaths[self.destination])
+
+        moveInfoList = list(
+            (a, len(a) * self.ENERGY_MAP[self.name]) for a in pathList)
+        moveInfoList = sorted(moveInfoList, key=lambda a: a[1])
+
+        availableMoveInfo = list()
+        for path, energy in moveInfoList:
+            if all(anthropodLocations[a.index] is None for a in path):
+                availableMoveInfo.append((path, energy))
+        return availableMoveInfo
 
 
 class Game:
+
+    class Result:
+        def __init__(self, sequence: list, energy: int):
+            self.sequence = sequence
+            self.energy = energy
 
     def __init__(self, state: str):
         self.burrows = list(Burrow(a) for a in 'ABCD')
@@ -158,36 +143,93 @@ class Game:
             anthropod = Anthropod(a, b, destinations[a].pop(i))
             self.anthropods.append(anthropod)
 
-        self.initialLocations = [None] * len(self.nodes)
-        for a in self.anthropods:
-            self.initialLocations[a.start.index] = a
-
         for node in self.nodes:
             node.initializeEdges()
         for node in self.nodes:
             node.analyzeGraph()
-        for anthropod in self.anthropods:
-            anthropod.initializeMoves(self.initialLocations)
 
     def __repr__(self) -> str:
         return '[Game]'
 
-    def dump(self, anthropodLocations: list = None):
-        anthropodLocations = anthropodLocations or self.initialLocations
+    def _dump(self, anthropodLocations: list = None):
         state = list('.' if a is None else a.name for a in anthropodLocations)
 
         print(''.join(state[:11]))
         print(f"  {' '.join(state[11:15])}")
         print(f"  {' '.join(state[15:19])}")
 
-    def makeMove(self, anthropodLocations: list):
-        pass
+    def _play(self,
+              anthropods: list,
+              anthropodLocations: list,
+              moves: list,
+              energy: int):
+        if len(anthropods) == 0:
+            return dict(moves=moves, energy=energy)
+
+        anthropod = anthropods[0]
+        moveInfo = anthropod.getAvailableMoves(
+            self.nodes, anthropodLocations)
+        for movePath, moveEnergy in moveInfo:
+            newLocations = anthropodLocations.copy()
+            newLocations[movePath[-1].index] = anthropod
+            newLocations[movePath[0].index] = None
+
+            result = self._play(
+                anthropods[1:], newLocations, moves + [(movePath, moveEnergy)])
+
+        return None
 
     def play(self):
-        self.makeMove(self.anthropods)
+        """ There are only 8*7*6*5*4*3*2 POSSIBLE sequences of first moves.
+        If we assume that a 2nd move happens as SOON as it's possible to make
+        that move, then those moves essentially don't count so there are 40320
+        total moves.  Strategy is to evaluate the energy used for each
+        unique sequence of anthropod moves and find the lowest energy
+        """
+        anthropodLocations = [None] * len(self.nodes)
+        for a in self.anthropods:
+            anthropodLocations[a.start.index] = a
+
+        for anthropodSequence in permutations(self.anthropods):
+            best = self._play(anthropodSequence, anthropodLocations, list(), 0)
+
+        # self._dump(anthropodLocations)
+        # return self._play(self.anthropods, anthropodLocations)
+        return None
 
 
 game = Game('BCBDADCA')
-game.dump()
+game.play()
 
 print('done')
+
+
+"""
+https://csacademy.com/app/graph_editor/
+#################
+#..  .  .  .  ..#
+###B1#C1#B2#D1###
+  #A2#D2#C2#A1#
+  #############
+
+A1: [D1, B1]
+A2: None
+B1: [C1, D2]
+B2: [C1, D2]
+C1: [B2]
+C2: None
+D1: [A1]
+D2: [C1, D1, A1]
+
+A1 D1
+A1 B1
+B1 C1
+B1 D2
+B2 C1
+B2 D2
+C1 B2
+D1 A1
+D2 C1
+D2 D1
+D2 A1
+"""
