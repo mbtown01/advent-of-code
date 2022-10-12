@@ -137,7 +137,7 @@ class Program:
         return algo(list(int(a) for a in input))
 
 
-with open('day24.txt') as reader:
+with open('2021/day24.txt') as reader:
     program = Program(reader.readlines())
     # program.analyze('91398299697996')
     print()

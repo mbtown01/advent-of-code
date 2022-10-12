@@ -2,7 +2,7 @@
 
 from functools import reduce
 
-with open('day9.txt') as reader:
+with open('2021/day9.txt') as reader:
 
     allRows = list()
     for line in reader.readlines():

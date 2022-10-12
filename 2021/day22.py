@@ -139,7 +139,7 @@ class Cube(RegionWithState):
 
 def findSum(universe: Region):
     allCubes = list()
-    with open('day22.txt') as reader:
+    with open('2021/day22.txt') as reader:
         for line in reader.readlines():
             state, cubeDef = line.strip().split(' ')
             axes = list()

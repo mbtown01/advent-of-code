@@ -52,7 +52,7 @@ class End(Node):
 
 
 graphMap = dict(start=Start(), end=End())
-with open('day12.txt') as reader:
+with open('2021/day12.txt') as reader:
     for line in reader.readlines():
         nodeList = list()
         for name in line.strip().split('-'):

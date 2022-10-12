@@ -1,6 +1,6 @@
 import numpy as np
 
-with open('day6.txt') as reader:
+with open('2021/day6.txt') as reader:
     allFish = list(int(a) for a in reader.readline().strip().split(','))
     allFish = np.array(allFish)
     allFishBuckets = list()

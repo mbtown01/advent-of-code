@@ -1,6 +1,6 @@
 import numpy as np
 
-with open('day7.txt') as reader:
+with open('2021/day7.txt') as reader:
     allCrabs = list(int(a) for a in reader.readline().strip().split(','))
     assert 0 == min(allCrabs)
     posListLen = max(allCrabs)+1

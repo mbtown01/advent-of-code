@@ -2,7 +2,7 @@
 import numpy as np
 
 
-with open('day5.txt') as reader:
+with open('2021/day5.txt') as reader:
     allLines = list()
     maxX, maxY = 0, 0
     for line in reader.readlines():

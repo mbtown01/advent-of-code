@@ -2,7 +2,7 @@ import numpy as np
 from collections import defaultdict
 
 template, ruleMap = None, dict()
-with open('day14.txt') as reader:
+with open('2021/day14.txt') as reader:
     for line in reader.readlines():
         line = line.strip()
         if '->' in line:

@@ -44,7 +44,7 @@ def parse(line):
     return (True, score)
 
 
-with open('day10.txt') as reader:
+with open('2021/day10.txt') as reader:
     total, scoreList = 0, list()
     for line in reader.readlines():
         line = line.strip()

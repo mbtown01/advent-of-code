@@ -30,7 +30,7 @@ class BingoCard:
         return self._hasWon
 
 
-with open('day4.txt') as reader:
+with open('2021/day4.txt') as reader:
     allNumbers = list(int(a) for a in reader.readline().split(','))
     allCardData = list()
     for line in reader.readlines():

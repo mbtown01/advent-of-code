@@ -32,7 +32,7 @@ def dumpBoard(board: list):
         print(''.join(list(a.state for a in row)))
 
 
-with open('day25.txt') as reader:
+with open('2021/day25.txt') as reader:
     board = list()
     for y, line in enumerate(reader.readlines()):
         row = list(Position(a, x, y) for x, a in enumerate(line.strip()))

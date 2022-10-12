@@ -1,7 +1,7 @@
 import numpy as np
 
 dotList, foldList = list(), list()
-with open('day13.txt') as reader:
+with open('2021/day13.txt') as reader:
     for line in reader.readlines():
         line = line.strip()
         if ',' in line:

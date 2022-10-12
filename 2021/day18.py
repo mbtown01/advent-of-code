@@ -159,7 +159,7 @@ for i, testInfo in enumerate(testSet):
         print(f"    Received '{result}'")
 
 
-with open('day18.txt') as reader:
+with open('2021/day18.txt') as reader:
     numberList = list(Pair.tryParse(a.strip()) for a in reader.readlines())
 finalNumber = reduce(lambda a, b: Pair(a, b).copy().reduce(), numberList)
 print(f"part 1: {finalNumber.magnitude()}")

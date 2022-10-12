@@ -1,7 +1,7 @@
 import numpy as np
 
 
-with open('day2.txt') as reader:
+with open('2021/day2.txt') as reader:
     count, depth, horizontal = 0, 0, 0
     for cmd, units in list(a.split(' ') for a in reader.readlines()):
         units = int(units)
@@ -19,7 +19,7 @@ with open('day2.txt') as reader:
     print(f"part 1: horizontal={horizontal}, depth={depth}, result={result}")
 
 
-with open('day2.txt') as reader:
+with open('2021/day2.txt') as reader:
     aim, count, depth, horizontal = 0, 0, 0, 0
     for cmd, units in list(a.split(' ') for a in reader.readlines()):
         units = int(units)

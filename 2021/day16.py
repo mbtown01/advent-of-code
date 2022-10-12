@@ -98,7 +98,7 @@ class OperatorPacket(Packet):
 packetTypeMap[4] = LiteralPacket
 packetTypeMap[None] = OperatorPacket
 
-with open('day16.txt') as reader:
+with open('2021/day16.txt') as reader:
     for message in reader.readlines():
         message = message.strip()
         print(f"### Processing  message '{message}'")

@@ -15,7 +15,7 @@ class Node:
 
 
 riskMatrix = list()
-with open('day15.txt') as reader:
+with open('2021/day15.txt') as reader:
     for line in reader.readlines():
         riskMatrix.append(list(int(a) for a in line.strip()))
 

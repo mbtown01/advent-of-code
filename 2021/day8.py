@@ -58,7 +58,7 @@ def findSignal(signals: list, data: list):
     return data[0]
 
 
-with open('day8.txt') as reader:
+with open('2021/day8.txt') as reader:
     outputSum, knownNumCounts = 0, 0
 
     for line in reader.readlines():

@@ -1,6 +1,6 @@
 import numpy as np
 
-with open('day20.txt') as reader:
+with open('2021/day20.txt') as reader:
     algorithm = reader.readline().strip()
     reader.readline()
 

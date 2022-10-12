@@ -110,7 +110,7 @@ class Scanner(Location):
 
 
 scannerList = list()
-with open('day19.txt') as reader:
+with open('2021/day19.txt') as reader:
     for line in reader.readlines():
         line = line.strip()
         if line.startswith('--- scanner'):

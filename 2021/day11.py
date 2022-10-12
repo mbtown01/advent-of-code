@@ -3,7 +3,7 @@
 from functools import reduce
 
 allRows = list()
-with open('day11.txt') as reader:
+with open('2021/day11.txt') as reader:
     for line in reader.readlines():
         allRows.append(list(int(a) for a in line.strip()))
 
@@ -41,7 +41,7 @@ flashCount = sum(incrementEnergy() for a in range(100))
 print(f"part 1: flashCount={flashCount}")
 
 allRows = list()
-with open('day11.txt') as reader:
+with open('2021/day11.txt') as reader:
     for line in reader.readlines():
         allRows.append(list(int(a) for a in line.strip()))
 

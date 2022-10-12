@@ -21,7 +21,7 @@ def decodePart2(allNumbers: list, useMostCommon: bool, tieBreaker: str):
     return int(filteredNumbers[0], 2)
 
 
-with open('day3.txt') as reader:
+with open('2021/day3.txt') as reader:
     allNumbers = list(a.strip() for a in reader.readlines())
     countList = list()
     for i in range(len(allNumbers[0])):
