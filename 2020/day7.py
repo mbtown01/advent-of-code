@@ -19,8 +19,8 @@ class Bag:
             outerBagSet = outerBagSet.union(bagSet)
         return outerBagSet
 
-    def countTotalInnerBags(self):
-        return 1 + sum(b*a.countTotalInnerBags()
+    def getSelfPlusInnerBagCount(self):
+        return 1 + sum(b*a.getSelfPlusInnerBagCount()
                        for a, b in self.innerBagCountMap.items())
 
 
@@ -54,4 +54,4 @@ for bag in allBags.values():
 shinyGoldBag = allBags['shiny gold']
 
 print(f"part 1: {len(shinyGoldBag.allOuterBagsSet)}")
-print(f"part 2: {shinyGoldBag.countTotalInnerBags()-1}")
+print(f"part 2: {shinyGoldBag.getSelfPlusInnerBagCount()-1}")
