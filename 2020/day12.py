@@ -32,15 +32,11 @@ def part1():
     posXyt = [0, 0, 0]
     for instruction in instructions:
         cmd, value = instruction[0], int(instruction[1:])
-        origPosXyt = list(posXyt)
 
         dXyt = dirDxytMap[posXyt[2]] if cmd == 'F' else cmdDxytMap[cmd]
         posXyt = list(posXyt[i] + value*dXyt[i] for i in range(len(posXyt)))
         posXyt[2] = resetAngle(posXyt[2])
 
-        print(f"{origPosXyt} + {instruction} = {posXyt}")
-
-    # not 1554
     distance = abs(posXyt[0]) + abs(posXyt[1])
     print(f"part 1: {distance}")
 
@@ -58,8 +54,6 @@ def part2():
     wayPtXy = [10, 1]
     for instruction in instructions:
         cmd, value = instruction[0], int(instruction[1:])
-        origPosXy = list(posXy)
-        origWayPtXy = wayPtXy
 
         if cmd in 'NEWS':
             dXyt = cmdDxytMap[cmd]
@@ -80,10 +74,9 @@ def part2():
             for i in range(value):
                 posXy = list(posXy[i] + wayPtXy[i] for i in range(len(posXy)))
 
-        print(f"{origPosXy}w{origWayPtXy}+ {instruction} = {posXy}w{wayPtXy}")
-
     distance = abs(posXy[0]) + abs(posXy[1])
     print(f"part 2: {distance}")
 
 
+part1()
 part2()
