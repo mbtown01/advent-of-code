@@ -1,4 +1,3 @@
-
 elfCalorieList = [0]
 
 with open('2022/day1.txt') as reader:
@@ -8,6 +7,5 @@ with open('2022/day1.txt') as reader:
         except:
             elfCalorieList.append(0)
 
-elfCalorieList = sorted(elfCalorieList)
 print(f"part 1: {max(elfCalorieList)}")
-print(f"part 2: {sum(elfCalorieList[-3:])}")
+print(f"part 2: {sum(sorted(elfCalorieList)[-3:])}")
