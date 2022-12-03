@@ -1,6 +1,8 @@
 
 
 def play(numbers: list, maxTurn: int):
+    # This approach is pretty brute force.  One could argue that this
+    # should be optimized but for now I'm moving on...
     numberTurnMap = {number: [turn] for turn, number in enumerate(numbers)}
     lastSpokenNumber = numbers[-1]
     for turn in range(len(numbers), maxTurn):
