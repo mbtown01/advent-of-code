@@ -56,11 +56,10 @@ class BluePrint:
     def __repr__(self) -> str:
         return f"[BluePrint {self.id}]"
 
-    def findQuality(self, resources: ResourceCountCollection,
+    def findQuality(self,
+                    resources: ResourceCountCollection,
                     robots: ResourceCountCollection,
                     seen: dict, best: int, remain: int):
-        # if remain == 0:
-        #     return resources.get(Resource.GEODE, 0)
         seenKey = tuple(
             [resources.get(a, 0) for a in Resource] +
             [robots.get(a, 0) for a in Resource])
@@ -68,8 +67,14 @@ class BluePrint:
         if remain <= seenRemain:
             return best
 
-        print(f"{remain} robots: {robots}")
-        print(f"{remain} resources: {resources}")
+        # Shouldn't use sum() here as it's very inefficient in
+        # python.  Need a sum-of-series equation replacement
+        geodeRobots = robots.get(Resource.GEODE, 0)
+        geodeResources = resources.get(Resource.GEODE, 0)
+        bestPossible = geodeResources + \
+            sum(geodeRobots + a for a in range(remain))
+        if bestPossible <= best:
+            return best
 
         resourceCount = 0
         for resource, robotCost in self.robotCosts.items():
@@ -78,7 +83,6 @@ class BluePrint:
                     nextResources.get(a, 0) < b for (a, b) in robotCost.items()):
                 steps, nextResources = steps + 1, nextResources + robots
             if steps < remain:
-                print(f"{remain} BUILDING {resource} {steps} {robotCost}")
                 scenarioResult = self.findQuality(
                     (nextResources - robotCost) + robots,
                     robots + ResourceCountCollection({resource: 1}),
@@ -89,8 +93,7 @@ class BluePrint:
                 resourceCount += 1
 
         if resourceCount == 0:
-            best = resources.get(Resource.GEODE, 0) + \
-                robots.get(Resource.GEODE, 0) * remain
+            best = geodeResources + geodeRobots * remain
 
         seen[seenKey] = remain
         return best
@@ -123,3 +126,13 @@ for bluePrint in bluePrintList:
     totalQuality += quality
 
 print(f"part 1: {totalQuality}")
+
+total = 1
+for bluePrint in bluePrintList[:3]:
+    result = bluePrint.findQuality(
+        ResourceCountCollection(),
+        ResourceCountCollection({Resource.ORE: 1}), dict(), 0, 32)
+    print(f"{bluePrint.id}: {result}")
+    total *= result
+
+print(f"part 2: {total}")
