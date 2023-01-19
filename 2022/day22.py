@@ -51,9 +51,12 @@ class Board:
                 count = int(allDirectionsText[lagIndex:])
                 self.allDirections.append((count, 0))
 
+        # Any 2D cube unfolding should have a 3-face side and a 4-face side
         dim1, dim2 = len(self.cellRowList), len(self.cellRowList[0])
         self.edgeLength = min([dim1, dim2]) // 3
 
+        # Build a map of where each face is on this cube based on a left->right
+        # then top->down count of faces
         faceLocationlist = list()
         for y, row in enumerate(self.cellRowList[::self.edgeLength]):
             for x, value in enumerate(row[::self.edgeLength]):
@@ -62,9 +65,9 @@ class Board:
         self.faceLocationMap = \
             {a+1: b for (a, b) in enumerate(faceLocationlist)}
 
-        self.setupDefaultNeighbors()
-
-    def setupDefaultNeighbors(self):
+        # Create the default neighbors which are adjacent and then WRAP in
+        # any given direction which is all you need for part 1 and most of
+        # what you need for part 2
         for row in self.cellRowList:
             cells = list(a for a in row if a is not None)
             for i, cell in enumerate(cells):
@@ -99,7 +102,7 @@ class Board:
         return (1000 * (currentCell.row+1) +
                 4 * (currentCell.column+1) + currentDir.value)
 
-    def getEdgeCells(self, face: int, edge: CellDirection):
+    def _getEdgeCells(self, face: int, edge: CellDirection):
         x1, y1 = (a*self.edgeLength for a in self.faceLocationMap[face])
         x2, y2 = x1 + self.edgeLength, y1 + self.edgeLength
         if edge == CellDirection.UP:
@@ -112,16 +115,22 @@ class Board:
             return list(a[x2-1] for a in self.cellRowList[y1:y2])
 
     def connectNeighborsByPath(self, path: list):
+        # It's not clear to me how to algorithmically fold the 2D info
+        # into a cube, so I rely on a human to fold it and then describe
+        # the linkages between faces
         toPath = list(path[(i+1) % len(path)] for i in range(len(path)))
         for (fromFace, fromDir, step), (toFace, toDir, _) in zip(path, toPath):
-            fromCells = self.getEdgeCells(fromFace, fromDir)
-            toCells = self.getEdgeCells(toFace, toDir.opposite())
+            fromCells = self._getEdgeCells(fromFace, fromDir)
+            toCells = self._getEdgeCells(toFace, toDir.opposite())
             for fromCell, toCell in zip(fromCells, toCells[::step]):
                 fromCell.neighbors[fromDir] = (toCell, toDir)
                 toCell.neighbors[toDir.opposite()] = \
                     (fromCell, fromDir.opposite())
 
     def sanityCheckFaceDir(self, face: int, dir: CellDirection):
+        # Will raise an exception if starting at a cell on the given face
+        # and going in the direction provides doesn't loop back to the start
+        # in exact 4 * edgeLength steps
         startFace, currentDir = face, dir
         x, y = (a*self.edgeLength for a in self.faceLocationMap[startFace])
         startCell = currentCell = self.cellRowList[y][x]
@@ -148,12 +157,6 @@ print(f"part 1: {board.executePath()}")
 # 223344..
 # ....5566
 # ....5566
-
-# 6 faces, 4 edges == 24 total mapping (12 pairs)
-# 3 unique circular paths around the cube
-#   2R -> 3R -> 4R /> 6D /> 2R
-#   2U /> 1D -> 4D -> 5D /> 2U
-#   3U /> 1R /> 6L -> 5L /> 3U
 
 # board = Board()
 # board.connectNeighborsByPath([
@@ -209,7 +212,4 @@ board.connectNeighborsByPath([
 board.sanityCheckFaceDir(4, CellDirection.RIGHT)
 board.sanityCheckFaceDir(4, CellDirection.UP)
 board.sanityCheckFaceDir(6, CellDirection.RIGHT)
-# 6387 TOO LOW
-# 54393 too low
 print(f"part 2: {board.executePath()}")
-# board.dump()
