@@ -3,7 +3,6 @@ from collections import defaultdict
 adjacencies = list((a, b) for b in range(-1, 2) for a in range(-1, 2))
 adjacencies = list(a for a in adjacencies if a != (0, 0))
 numbers = list(chr(ord('0')+a) for a in range(10))
-numbersAndBlanks = numbers + ['.']
 
 part1Sum, part2Sum = 0, 0
 with open('2023/day3.txt', encoding="utf8") as reader:
@@ -25,7 +24,7 @@ with open('2023/day3.txt', encoding="utf8") as reader:
                 for dx, dy in adjacencies
                 if (x + dx >= 0 and x + dx < len(row) and
                     y + dy >= 0 and y + dy < len(schematic) and
-                    schematic[y+dy][x+dx] not in numbersAndBlanks)
+                    schematic[y+dy][x+dx] not in numbers + ['.'])
             )
             if len(symbols) > 0:
                 number = int(row[start:end+1])
