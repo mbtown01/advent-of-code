@@ -1,3 +1,10 @@
+from queue import PriorityQueue
+
+"""
+A great article on graph search algorithms
+
+http://theory.stanford.edu/~amitp/GameProgramming/AStarComparison.html
+"""
 
 
 class Cell:
@@ -11,9 +18,17 @@ class Cell:
     def __repr__(self) -> str:
         return f"[Cell start='{self.startChar}]"
 
+    def getBlizzardCount(self, colHarmonic: int, rowHarmonic: int) -> bool:
+        return (self.colHarmonics.count(colHarmonic) +
+                self.rowHarmonics.count(rowHarmonic))
+
+    def isOpen(self, colHarmonic: int, rowHarmonic: int) -> bool:
+        if self.isWall:
+            return False
+        return self.getBlizzardCount(colHarmonic, rowHarmonic) == 0
+
     def getDumpChar(self, colHarmonic: int, rowHarmonic: int) -> str:
-        blizzardCount = self.colHarmonics.count(colHarmonic) + \
-            self.rowHarmonics.count(rowHarmonic)
+        blizzardCount = self.getBlizzardCount(colHarmonic, rowHarmonic)
         if self.isWall:
             return '#'
         if blizzardCount == 0:
@@ -23,12 +38,14 @@ class Cell:
 
 class Board:
 
+    CELL_CHAR_DIR_VECTOR_MAP = \
+        {'^': (0, -1), '>': (1, 0), 'v': (0, 1), '<': (-1, 0)}
+
     def __init__(self):
-        cellCharDirVectorMap = \
-            {'^': (0, -1), '>': (1, 0), 'v': (0, 1), '<': (-1, 0)}
 
         self.cellRowList = list()
-        self.moveOptions = list(cellCharDirVectorMap.values()) + [(0, 0)]
+        self.moveOptions = \
+            list(Board.CELL_CHAR_DIR_VECTOR_MAP.values()) + [(0, 0)]
 
         with open('2022/day24.txt') as reader:
             for row in reader.readlines():
@@ -73,6 +90,22 @@ class Board:
             self.snapshotCache[minute] = self.getTimeSnapshot(minute)
         print('Cached and ready')
 
+    def getNeighbors(self, loc: tuple, minute):
+        harmonics = list(minute % a for a in self.shape)
+        neighbors = list()
+        for checkVector in self.moveOptions:
+            x, y = tuple(a + b for (a, b) in zip(loc, checkVector))
+            if x < 0 or y < 0:
+                continue
+            cell = self.cellRowList[y][x]
+            if cell.isOpen(*harmonics):
+                neighbors.append((x, y))
+
+        return neighbors
+
+    def getDistance(self, loc: tuple, dest: tuple):
+        return abs(dest[0] - loc[0]) + abs(dest[1] - loc[1])
+
     def getTimeSnapshot(self, minute: int):
         harmonics = list(minute % a for a in self.shape)
         return list(list(a.getDumpChar(*harmonics) for a in row)
@@ -82,6 +115,30 @@ class Board:
         snapshot = self.getTimeSnapshot(minute)
         for y, row in enumerate(snapshot):
             print(f"{''.join(a for a in row)} [{y}]")
+
+    def findBestPathAStar(self):
+        frontier = PriorityQueue()
+        frontier.put((0, self.start, 1))
+        cameFrom: dict[tuple, tuple] = {self.start: None}
+        costSoFar: dict[tuple, float] = {self.start: 0}
+
+        while not frontier.empty():
+            _, current, minute = frontier.get()
+            if current == self.destination:
+                return cameFrom, costSoFar
+
+            # What happens here if you need to STAY in the same place
+            # beacuse you can't go anywhere else?
+            neighbors = self.getNeighbors(current, minute)
+            for next in neighbors:
+                cost = costSoFar[current] + 1
+                if next not in costSoFar or cost < costSoFar[next]:
+                    costSoFar[next] = cost
+                    priority = cost + self.getDistance(next, self.destination)
+                    frontier.put((priority, next, minute+1))
+                    cameFrom[next] = current
+
+        raise RuntimeError('Never found the end')
 
     def findBestPath(self, loc: tuple, path: list, best: int, minute: int):
         if minute >= best:
@@ -107,5 +164,7 @@ class Board:
 
 
 board = Board()
+result = board.findBestPathAStar()
+print(f"part 1: {result}")
 result = board.findBestPath(board.start, list(), 100, 0)
 print(f"part 1: {result}")

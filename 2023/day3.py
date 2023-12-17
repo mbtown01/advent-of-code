@@ -18,7 +18,7 @@ with open('2023/day3.txt', encoding="utf8") as reader:
                 numberEnds.append(x)
 
         for start, end in zip(numberStarts, numberEnds):
-            symbols = list(
+            adjacentSymbolList = list(
                 (schematic[y+dy][x+dx], x+dx, y+dy)
                 for x in range(start, end+1)
                 for dx, dy in adjacencies
@@ -26,10 +26,10 @@ with open('2023/day3.txt', encoding="utf8") as reader:
                     y + dy >= 0 and y + dy < len(schematic) and
                     schematic[y+dy][x+dx] not in numbers + ['.'])
             )
-            if len(symbols) > 0:
+            if len(adjacentSymbolList) > 0:
                 number = int(row[start:end+1])
                 part1Sum += number
-                for symbol, rx, ry in symbols:
+                for symbol, rx, ry in adjacentSymbolList:
                     if symbol == '*':
                         gearNumbersMap[rx, ry].add((start, y, number))
 
