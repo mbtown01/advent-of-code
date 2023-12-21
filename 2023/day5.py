@@ -1,4 +1,7 @@
 
+import unittest
+
+
 class Span:
 
     def __init__(self, start: int, *, length: int = None):
@@ -59,7 +62,7 @@ class SourceDestinationMap:
 
 class Implementation:
 
-    def __init__(self, dataPath: str = '2023/day5_test.txt'):
+    def __init__(self, dataPath: str):
         with open(dataPath, encoding="utf8") as reader:
             self.seedList, self.mappingList = [], []
             for line in reader:
@@ -115,7 +118,32 @@ class Implementation:
         return sorted(result.items(), key=lambda a: a[1])[0]
 
 
-if __name__ == "__main__":
-    impl = Implementation()
-    print(f"part 1: {impl.part1()}")
-    print(f"part 2: {impl.part2()}")
+class TestCase(unittest.TestCase):
+
+    def test_containsPoint(self):
+        span = Span(100, length=100)
+        self.assertTrue(span.containsPoint(100))
+        self.assertTrue(span.containsPoint(150))
+        self.assertTrue(span.containsPoint(199))
+        self.assertFalse(span.containsPoint(99))
+        self.assertFalse(span.containsPoint(99))
+
+    def test_part1_ex(self):
+        impl = Implementation(f'2023/data/{__name__}_example.txt')
+        result = impl.part1()
+        self.assertEqual(result[1], 35)
+
+    def test_part1_real(self):
+        impl = Implementation(f'2023/data/{__name__}_real.txt')
+        result = impl.part1()
+        self.assertEqual(result[1], 324724204)
+
+    def test_part2_ex(self):
+        impl = Implementation(f'2023/data/{__name__}_example.txt')
+        result = impl.part2()
+        self.assertEqual(result[1], 46)
+
+    def test_part2_real(self):
+        impl = Implementation(f'2023/data/{__name__}_real.txt')
+        result = impl.part2()
+        self.assertEqual(result[1], 104070862)
