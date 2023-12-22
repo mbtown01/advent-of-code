@@ -36,7 +36,6 @@ class TestCase(unittest.TestCase):
     def test_part1_real(self):
         impl = Implementation(f'2023/data/{__name__}_real.txt')
         result = impl.part1()
-        # value 1834108710 is WRONG and too HIGH
         self.assertEqual(result, 1834108701)
 
     def test_part2_ex(self):
