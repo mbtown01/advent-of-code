@@ -17,7 +17,6 @@ class Implementation:
                     {'L': destinations[0], 'R': destinations[1]}
 
     def traverse(self, startNode: str, endNodeSet: set):
-        print(f"traverse {startNode} to {endNodeSet}")
         moveCount, current = 0, startNode
         while current not in endNodeSet:
             for direction in self.directions:
