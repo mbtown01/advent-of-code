@@ -39,9 +39,9 @@ class Implementation:
                 jCurrent, iCurrent = jStart, iStart
                 while True:
                     jNext, iNext = jCurrent + jTilt, iCurrent + iTilt
-                    nextLocChar = (self.grid[jNext][iNext]
-                                   if 0 <= jNext < self.height and
-                                   0 <= iNext < self.width else None)
+                    nextLocChar = self.grid[jNext][iNext] \
+                        if (0 <= jNext < self.height and
+                            0 <= iNext < self.width) else None
                     if nextLocChar is None or nextLocChar in '#O':
                         if (jCurrent, iCurrent) != (jStart, iStart):
                             self.grid[jStart][iStart] = '.'
