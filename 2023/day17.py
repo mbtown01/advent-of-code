@@ -2,7 +2,6 @@ import unittest
 
 from enum import Enum
 from queue import PriorityQueue
-from collections import defaultdict
 from sys import stdout
 from io import TextIOBase
 
@@ -73,19 +72,14 @@ class Implementation:
     def _findBestPathAStar(self, minRun: int, maxRun: int):
         frontier = PriorityQueue()
         frontier.put((0, self.start, [], []))
-        cumeHeatLossMap = defaultdict(dict)
+        cumeHeatLossMap = dict()
 
         pointsEvaluated = 0
-        minRunLimited = False
         while not frontier.empty():
             cumeHeatLoss, currLoc, prevLocList, prevDirList = frontier.get()
 
             if currLoc == self.end:
                 trueHeatLoss = sum(self.gridMap[a] for a in prevLocList)
-                self._dump(prevLocList, prevDirList)
-                with open('output.txt', 'w', encoding='utf8') as output:
-                    self._dump(prevLocList, prevDirList, file=output)
-                print(f"True path heat loss: {trueHeatLoss}")
                 print(f"Points evaluated: {pointsEvaluated}")
                 return trueHeatLoss
 
@@ -98,25 +92,24 @@ class Implementation:
                 if minRun > 0 and len(prevDirList) > 0:
                     prevDirMatchCount = self._getRecentDirMatchCount(
                         prevDirList, prevDirList[-1])
-                    minRunLimited = ((prevDirMatchCount < minRun and
-                                      prevDirNextDirMatchCount == 0) or
-                                     (nextLoc == self.end and
-                                      prevDirNextDirMatchCount < minRun))
+                    if ((prevDirMatchCount < minRun and
+                            prevDirNextDirMatchCount == 0) or
+                        (nextLoc == self.end and
+                            prevDirNextDirMatchCount < minRun)):
+                        continue
 
                 if (nextLocHeatLoss is None or
                         nextLoc in prevLocList or
-                        minRunLimited or
                         prevDirNextDirMatchCount == maxRun or
                         prevDirList[-1:] == [self.dirOppositeMap[nextDir]] or
                         nextLoc == self.start):
                     continue
 
                 nextCumeHeatLoss = cumeHeatLoss + nextLocHeatLoss
-                secondaryKey = (nextDir, prevDirNextDirMatchCount)
-                nextLocHeatLoss = \
-                    cumeHeatLossMap[nextLoc].get(secondaryKey, 1e99)
+                cumeHeatLossKey = (nextLoc, nextDir, prevDirNextDirMatchCount)
+                nextLocHeatLoss = cumeHeatLossMap.get(cumeHeatLossKey, 1e99)
                 if nextCumeHeatLoss < nextLocHeatLoss:
-                    cumeHeatLossMap[nextLoc][secondaryKey] = nextCumeHeatLoss
+                    cumeHeatLossMap[cumeHeatLossKey] = nextCumeHeatLoss
                     frontier.put((nextCumeHeatLoss, nextLoc,
                                   prevLocList + [nextLoc],
                                   prevDirList + [nextDir]))
@@ -148,11 +141,6 @@ class TestCase(unittest.TestCase):
 
     def test_part2_ex(self):
         impl = Implementation(f'2023/data/{__name__}_example.txt')
-        result = impl.part2()
-        self.assertEqual(result, 94)
-
-    def test_part2_mbt(self):
-        impl = Implementation(f'2023/data/{__name__}_example_mbt.txt')
         result = impl.part2()
         self.assertEqual(result, 94)
 
