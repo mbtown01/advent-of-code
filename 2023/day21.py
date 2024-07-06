@@ -66,22 +66,52 @@ class Implementation:
         iValues = list(a[1] for a in tupleList)
         return min(jValues), max(jValues), min(iValues), max(iValues)
 
-    def _getCardinalTileInfoList(self, tileMap: dict):
-        jMin, jMax, iMin, iMax = self._getBoundingRangeValues(tileMap.keys())
-        return [list(tileMap[(j, 0)] for j in range(1, jMax+1)),
-                list(tileMap[(j, 0)] for j in range(-1, jMin-1, -1)),
-                list(tileMap[(0, i)] for i in range(1, iMax+1)),
-                list(tileMap[(0, i)] for i in range(-1, iMin-1, -1))]
+    def _sanityCheck(self, tileInfoMap: dict, steps: int, zzTestMap: dict):
+        axisFwd, axisBkwd, axisConst = (1, 12), (-1, -12, -1), (1,)
+        axisRanges = [[axisFwd, axisConst], [axisConst, axisFwd],
+                      [axisBkwd, axisConst], [axisConst, axisBkwd]]
+        for jBounds, iBounds in axisRanges:
+            allTiles = list(tileInfoMap[(j, i)]
+                            for j in range(*jBounds)
+                            for i in range(*iBounds)
+                            if (j, i) in tileInfoMap)
+            total = sum(a.getActiveLocCount(steps) for a in allTiles)
+            if len(allTiles) > 2:
+                axisChar = allTiles[-3].displayChar
+                print(f"AXES [{axisChar}] REAL = {total}")
+                print(f"AXES [{axisChar}] TEST = {zzTestMap.get(axisChar)}")
 
-    def _getDiagonalTileInfolist(self, tileMap: dict):
-        jMin, jMax, iMin, iMax = self._getBoundingRangeValues(tileMap.keys())
-        testRanges = [list((j, -1) for j in range(1, jMax+1)),
-                      list((j, 1) for j in range(-1, jMin-1, -1)),
-                      list((1, i) for i in range(1, iMax+1)),
-                      list((-1, i) for i in range(-1, iMin-1, -1))]
+        axisFwd, axisBkwd = (1, 12), (-1, -12, -1)
+        axisRanges = [[axisFwd, axisFwd], [axisFwd, axisBkwd],
+                      [axisBkwd, axisFwd], [axisBkwd, axisBkwd]]
+        for jBounds, iBounds in axisRanges:
+            allTiles = list(tileInfoMap[(j, i)]
+                            for j in range(*jBounds)
+                            for i in range(*iBounds)
+                            if (j, i) in tileInfoMap)
+            total = sum(a.getActiveLocCount(steps) for a in allTiles)
+            if len(allTiles) > 0:
+                axisChar = allTiles[0].displayChar
+                print(f"DIAG [{axisChar}] REAL = {total}")
+                print(f"AXES [{axisChar}] TEST = {zzTestMap.get(axisChar)}")
+                for j in range(*jBounds):
+                    temp = list(tileInfoMap[(j, i)]
+                                for i in range(*iBounds)
+                                if (j, i) in tileInfoMap)
+                    data = list(str(a.getActiveLocCount(steps)) for a in temp)
+                    print(' '.join(data))
 
-        return list(list(tileMap[a] for a in r if a in tileMap)
-                    for r in testRanges)
+    def _dump(self, completedTileInfoMap: dict, step: int):
+        jMin, jMax, iMin, iMax = \
+            self._getBoundingRangeValues(completedTileInfoMap.keys())
+
+        for j in range(jMin, jMax+1):
+            rowChars = ' '.join(list(
+                completedTileInfoMap[(j, i)].displayChar
+                if (j, i) in completedTileInfoMap else ' '
+                for i in range(iMin, iMax+1)))
+            print(f"[{j:04d}]  {rowChars}")
+        print(f"step = {step}")
 
     def findAll(self, steps: int):
         tileInfoMap = defaultdict(TileInfo)
@@ -131,75 +161,64 @@ class Implementation:
             # math to predict the final valuef
             zzTestMap = dict()
             if len(noLongerOccupiedTileList) > 0 and len(tileInfoMap) > 9:
+                axisGoodCount, totalActiveLocCount = 0, 0
                 jMin, jMax, iMin, iMax = \
                     self._getBoundingRangeValues(completedTileInfoMap.keys())
-
-                for j in range(jMin, jMax+1):
-                    rowChars = ' '.join(list(
-                        completedTileInfoMap[(j, i)].displayChar
-                        if (j, i) in completedTileInfoMap else ' '
-                        for i in range(iMin, iMax+1)))
-                    print(f"[{j:04d}]  {rowChars}")
-                print(f"step = {step}")
-                print(f"completedTileCount = {len(noLongerOccupiedTileList)}")
+                self._dump(completedTileInfoMap, step)
 
                 # Check whether each of the 4 cardinal axes has started
                 # repeating and if they have, we can now calcuate forward
-                compAxisTileInfolist = \
-                    self._getCardinalTileInfoList(completedTileInfoMap)
-                axisGoodCount, totalActiveLocCount = 0, 0
-                for a, axis in enumerate(compAxisTileInfolist):
+                compAxisTileInfolist = [
+                    list(tileInfoMap[(j, 0)] for j in range(1, jMax+1)),
+                    list(tileInfoMap[(j, 0)] for j in range(-1, jMin-1, -1)),
+                    list(tileInfoMap[(0, i)] for i in range(1, iMax+1)),
+                    list(tileInfoMap[(0, i)] for i in range(-1, iMin-1, -1))]
+                for axis in compAxisTileInfolist:
                     if len(axis) <= 2 or hash(axis[-1]) != hash(axis[-2]):
                         break
 
                     axisStepPace = axis[-1].minStep - axis[-2].minStep
-                    tileStepCount = axis[-1].maxStep - axis[-1].minStep + 1
-                    assert tileStepCount > axisStepPace
-                    assert tileStepCount < 2*axisStepPace
-
                     nextStep = axis[-1].minStep + axisStepPace
                     pairsRemain = (steps - nextStep) // axisStepPace // 2 - 1
                     nextStep += pairsRemain * axisStepPace * 2
 
                     axisActiveLocCountList = \
                         list(a.getActiveLocCount(steps) for a in axis)
-                    axisActiveLocCount = sum(axisActiveLocCountList)
-                    axisActiveLocCount += \
+                    axisActiveLocCount = \
+                        sum(axisActiveLocCountList) + \
                         pairsRemain * sum(axisActiveLocCountList[-2:])
                     while nextStep < steps:
                         axisActiveLocCount += \
                             axis[-1].getActiveLocCount(steps, nextStep)
                         nextStep += axisStepPace
 
+                    zzTestMap[axis[-3].displayChar] = axisActiveLocCount
                     totalActiveLocCount += axisActiveLocCount
                     axisGoodCount += 1
 
-                    zzTestMap[axis[-3].displayChar] = axisActiveLocCount
-                    # print(f"[{a}] displayChar = {axis[-3].displayChar}")
-                    # print(f"[{a}] axisActiveLocCount = {axisActiveLocCount}")
-
-                diagAxisTileInfoList = \
-                    self._getDiagonalTileInfolist(completedTileInfoMap)
-                for a, axis in enumerate(diagAxisTileInfoList):
+                # Now check whether the four wedges going NE, NW, SE, SW
+                # are repeating and if so, we can calculate this forward too
+                testRanges = [
+                    list((j, -1) for j in range(1, jMax+1)),
+                    list((j, 1) for j in range(-1, jMin-1, -1)),
+                    list((1, i) for i in range(1, iMax+1)),
+                    list((-1, i) for i in range(-1, iMin-1, -1))]
+                diagAxisTileInfoList = list(
+                    list(tileInfoMap[a] for a in r if a in tileInfoMap)
+                    for r in testRanges)
+                for axis in diagAxisTileInfoList:
                     if len(axis) <= 2 or hash(axis[-1]) != hash(axis[-2]):
                         break
 
                     axisStepPace = axis[-1].minStep - axis[-2].minStep
-                    tileStepCount = axis[-1].maxStep - axis[-1].minStep + 1
-                    assert tileStepCount > axisStepPace
-                    assert tileStepCount < 2*axisStepPace
-
                     nextStep = axis[0].minStep
                     pairsRemain = (steps - nextStep) // axisStepPace // 2 - 1
                     nextStep += pairsRemain * axisStepPace * 2
 
-                    # 1 3 5 7 9  = 1 4 9  16 25 36 49 = 2n*(n+1)//2 - n
-                    # 2 4 6 8 10 = 2 6 12 20 30 42 56 = 2n*(n+1)//2
                     axisActiveLocCountList = \
                         list(a.getActiveLocCount(steps) for a in axis)
                     oddAxisLocCount = pairsRemain * (2*(pairsRemain+1)//2 - 1)
                     evenAxisLocCount = pairsRemain * 2*(pairsRemain+1)//2
-                    # TODO: The order here seems backwards sometimes
                     axisActiveLocCount = \
                         oddAxisLocCount * axisActiveLocCountList[0] + \
                         evenAxisLocCount * axisActiveLocCountList[1]
@@ -210,52 +229,15 @@ class Implementation:
                         nextStep += axisStepPace
                         width += 1
 
+                    zzTestMap[axis[0].displayChar] = axisActiveLocCount
                     totalActiveLocCount += axisActiveLocCount
                     axisGoodCount += 1
 
-                    zzTestMap[axis[0].displayChar] = axisActiveLocCount
-                    # print(f"[{a}] displayChar = {axis[0].displayChar}")
-                    # print(f"[{a}] axisActiveLocCount = {axisActiveLocCount}")
-
                 if axisGoodCount == 8:
-                    print(f"we're repeating at step {step}")
                     return totalActiveLocCount + \
                         tileInfoMap[(0, 0)].getActiveLocCount(steps)
 
-        # SANITY CHECKS BELOW
-        axisFwd, axisBkwd, axisConst = (1, 12), (-1, -12, -1), (1,)
-        axisRanges = [[axisFwd, axisConst], [axisConst, axisFwd],
-                      [axisBkwd, axisConst], [axisConst, axisBkwd]]
-        for jBounds, iBounds in axisRanges:
-            allTiles = list(tileInfoMap[(j, i)]
-                            for j in range(*jBounds)
-                            for i in range(*iBounds)
-                            if (j, i) in tileInfoMap)
-            total = sum(a.getActiveLocCount(steps) for a in allTiles)
-            if len(allTiles) > 2:
-                axisChar = allTiles[-3].displayChar
-                print(f"AXES [{axisChar}] REAL = {total}")
-                print(f"AXES [{axisChar}] TEST = {zzTestMap.get(axisChar)}")
-
-        axisFwd, axisBkwd = (1, 12), (-1, -12, -1)
-        axisRanges = [[axisFwd, axisFwd], [axisFwd, axisBkwd],
-                      [axisBkwd, axisFwd], [axisBkwd, axisBkwd]]
-        for jBounds, iBounds in axisRanges:
-            allTiles = list(tileInfoMap[(j, i)]
-                            for j in range(*jBounds)
-                            for i in range(*iBounds)
-                            if (j, i) in tileInfoMap)
-            total = sum(a.getActiveLocCount(steps) for a in allTiles)
-            if len(allTiles) > 0:
-                axisChar = allTiles[0].displayChar
-                print(f"DIAG [{axisChar}] REAL = {total}")
-                print(f"AXES [{axisChar}] TEST = {zzTestMap.get(axisChar)}")
-                for j in range(*jBounds):
-                    temp = list(tileInfoMap[(j, i)]
-                                for i in range(*iBounds)
-                                if (j, i) in tileInfoMap)
-                    data = list(str(a.getActiveLocCount(steps)) for a in temp)
-                    print(' '.join(data))
+        self._sanityCheck(tileInfoMap, steps, zzTestMap)
 
         # If we got to here, we just do it the old fashioned way!!
         return sum(a.getActiveLocCount(steps) for a in tileInfoMap.values())
