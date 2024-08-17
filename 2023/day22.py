@@ -106,20 +106,16 @@ class Implementation:
                     b1.bricksBelow.append(b2)
 
     def part1(self):
-        fullySupportedBrickMap = {
-            b1: list(b2 for b2 in b1.bricksAbove if len(b2.bricksBelow) == 1)
-            for b1 in self.bricks}
-        disintegratableBrickList = list(
-            a for a in self.bricks if len(fullySupportedBrickMap[a]) == 0)
-        return len(disintegratableBrickList)
+        return sum(
+            not any(b2 for b2 in b1.bricksAbove if len(b2.bricksBelow) == 1)
+            for b1 in self.bricks)
 
     def part2(self):
-        fallingBrickCountCache = dict()
-
         def getFallingBrickCount(b: Brick,
+                                 resultCache: dict,
                                  disintegratedBrickSet: set):
-            fallingBrickCountCacheKey = (b, tuple(disintegratedBrickSet))
-            result = fallingBrickCountCache.get(fallingBrickCountCacheKey)
+            resultCacheKey = (b, tuple(disintegratedBrickSet))
+            result = resultCache.get(resultCacheKey)
             if result is not None:
                 return result
 
@@ -130,14 +126,13 @@ class Implementation:
                        for b2 in b1.bricksBelow))
             disintegratedBrickSet.update(fallingBrickList)
             for b1 in fallingBrickList:
-                getFallingBrickCount(b1, disintegratedBrickSet)
+                getFallingBrickCount(b1, resultCache, disintegratedBrickSet)
 
-            fallingBrickCountCache[fallingBrickCountCacheKey] = disintegratedBrickSet
+            resultCache[resultCacheKey] = disintegratedBrickSet
             return disintegratedBrickSet
 
-        return sum(len(getFallingBrickCount(b, set()))
-                   for b in self.bricks
-                   if b.axes[2].start > 0)
+        return sum(len(getFallingBrickCount(b, dict(), set()))
+                   for b in self.bricks)
 
 
 class TestCase(unittest.TestCase):
