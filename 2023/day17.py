@@ -80,7 +80,7 @@ class Implementation:
 
             if currLoc == self.end:
                 trueHeatLoss = sum(self.gridMap[a] for a in prevLocList)
-                print(f"Points evaluated: {pointsEvaluated}")
+                # print(f"Points evaluated: {pointsEvaluated}")
                 return trueHeatLoss
 
             for nextDir in Direction:
@@ -115,8 +115,8 @@ class Implementation:
                                   prevDirList + [nextDir]))
 
             pointsEvaluated += 1
-            if pointsEvaluated % 10000 == 0:
-                print(pointsEvaluated)
+            # if pointsEvaluated % 10000 == 0:
+            #     print(pointsEvaluated)
 
         raise RuntimeError('Never found the end')
 

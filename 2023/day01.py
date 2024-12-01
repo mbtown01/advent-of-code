@@ -11,16 +11,14 @@ class Implementation:
             self.allLines = list(a.strip() for a in reader)
 
     def part1(self):
-        result = 0
-        for line in self.allLines:
+        def valueForLine(line: str):
             digits = list(int(a) for a in line if a in self.digitWordMap)
-            if len(digits) > 0:
-                result += 10*digits[0] + digits[-1]
-        return result
+            return 10*digits[0] + digits[-1] if len(digits) > 0 else 0
+
+        return sum(valueForLine(line) for line in self.allLines)
 
     def part2(self):
-        result = 0
-        for line in self.allLines:
+        def valueForLine(line: str):
             findResults = \
                 [(a, line.find(a)) for a in self.digitWordMap] + \
                 [(a, line.find(b)) for a, b in self.digitWordMap.items()] + \
@@ -29,9 +27,10 @@ class Implementation:
             findResults = list(a for a in findResults if a[1] != -1)
             findResults = sorted(findResults, key=lambda a: a[1])
             if len(findResults) > 0:
-                value = 10*int(findResults[0][0]) + int(findResults[-1][0])
-                result += value
-        return result
+                return 10*int(findResults[0][0]) + int(findResults[-1][0])
+            return 0
+
+        return sum(valueForLine(line) for line in self.allLines)
 
 
 class TestCase(unittest.TestCase):
