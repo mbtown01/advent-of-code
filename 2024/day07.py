@@ -1,17 +1,40 @@
 import unittest
 from os import path
+from itertools import product
 
 
 class Implementation:
 
+    operatorMethod = {
+        '+': lambda a, b: a + b,
+        '*': lambda a, b: a * b,
+        '|': lambda a, b: int(f"{a}{b}")
+    }
+
     def __init__(self, dataPath: str):
-        pass
+        self.equationList = list()
+        with open(dataPath, encoding="utf8") as reader:
+            for line in reader:
+                lhs, rhs = line.strip().split(': ')
+                lhs, rhs = int(lhs), list(int(a) for a in rhs.split(' '))
+                self.equationList.append((lhs, rhs))
+
+    def hasSolution(self, lhs: int, rhs: list, operators: str):
+        for operatorList in product(operators, repeat=len(rhs)-1):
+            result = rhs[0]
+            for rval, operator in zip(rhs[1:], operatorList):
+                result = self.operatorMethod[operator](result, rval)
+            if result == lhs:
+                return True
+        return False
 
     def part1(self):
-        raise NotImplementedError()
+        return sum(lhs for lhs, rhs in self.equationList
+                   if self.hasSolution(lhs, rhs, '+*'))
 
     def part2(self):
-        raise NotImplementedError()
+        return sum(lhs for lhs, rhs in self.equationList
+                   if self.hasSolution(lhs, rhs, '+*|'))
 
 
 class TestCase(unittest.TestCase):
@@ -20,19 +43,19 @@ class TestCase(unittest.TestCase):
     def test_part1_ex(self):
         impl = Implementation(f'{self._pathPrefix}_example.txt')
         result = impl.part1()
-        self.assertEqual(result, 0)
+        self.assertEqual(result, 3749)
 
     def test_part1_real(self):
         impl = Implementation(f'{self._pathPrefix}_real.txt')
         result = impl.part1()
-        self.assertEqual(result, 0)
+        self.assertEqual(result, 5702958180383)
 
     def test_part2_ex(self):
         impl = Implementation(f'{self._pathPrefix}_example.txt')
         result = impl.part2()
-        self.assertEqual(result, 0)
+        self.assertEqual(result, 11387)
 
     def test_part2_real(self):
         impl = Implementation(f'{self._pathPrefix}_real.txt')
         result = impl.part2()
-        self.assertEqual(result, 0)
+        self.assertEqual(result, 92612386119138)
