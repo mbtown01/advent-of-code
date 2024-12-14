@@ -19,22 +19,28 @@ class Implementation:
                 lhs, rhs = int(lhs), list(int(a) for a in rhs.split(' '))
                 self.equationList.append((lhs, rhs))
 
-    def hasSolution(self, lhs: int, rhs: list, operators: str):
-        for operatorList in product(operators, repeat=len(rhs)-1):
-            result = rhs[0]
-            for rval, operator in zip(rhs[1:], operatorList):
-                result = self.operatorMethod[operator](result, rval)
-            if result == lhs:
-                return True
-        return False
+    def hasSolutionTree(self, lhs: int, rhs: list, operators: str):
+        def search(val: int, index: int):
+            if index == len(rhs):
+                return val == lhs
+            if val > lhs:
+                return False
+
+            for op in operators:
+                if search(self.operatorMethod[op](val, rhs[index]), index+1):
+                    return True
+
+            return False
+
+        return search(rhs[0], 1)
 
     def part1(self):
         return sum(lhs for lhs, rhs in self.equationList
-                   if self.hasSolution(lhs, rhs, '+*'))
+                   if self.hasSolutionTree(lhs, rhs, '+*'))
 
     def part2(self):
         return sum(lhs for lhs, rhs in self.equationList
-                   if self.hasSolution(lhs, rhs, '+*|'))
+                   if self.hasSolutionTree(lhs, rhs, '+*|'))
 
 
 class TestCase(unittest.TestCase):

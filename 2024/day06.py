@@ -46,7 +46,7 @@ class Implementation:
     def part2(self):
         obstructionMap, pathList = dict(), self.findPath(self.gridMap)[1]
         for i, (loc, vec) in enumerate(pathList):
-            print(f"next {i} of {len(pathList)}")
+            # print(f"next {i} of {len(pathList)}")
             testLoc = (loc[0]+vec[0], loc[1]+vec[1])
             if self.gridMap.get(testLoc) == '.':
                 self.gridMap[testLoc] = '#'
