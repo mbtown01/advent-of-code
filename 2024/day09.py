@@ -1,6 +1,5 @@
 import unittest
 from os import path
-from collections import defaultdict
 
 
 class Implementation:
@@ -12,32 +11,32 @@ class Implementation:
     def defrag(self, data: list):
         result = list(dict(val=a[0], index=i, count=a[1], data=list())
                       for i, a in enumerate(data))
-        spaceListMap = defaultdict(list)
-        for value in [a for a in result if a['val'] is None]:
-            spaceListMap[value['count']].append(value)
+        spaceListMap = {c: list(a for a in result[::-1]
+                                if a['count'] == c and a['val'] is None)
+                        for c in range(10)}
 
         for mover in list(a for a in result if a.get('val') is not None)[::-1]:
-            availSpaces = list(b for a, b in spaceListMap.items()
+            availSpaces = list(b[-1] for a, b in spaceListMap.items()
                                if a >= mover['count'] and
-                               b[0]['index'] < mover['index'])
+                               len(b) > 0 and b[-1]['index'] < mover['index'])
             if len(availSpaces) > 0:
-                space = sorted(availSpaces, key=lambda a: a[0]['index'])[0][0]
+                space = sorted(availSpaces, key=lambda a: a['index'])[0]
                 space['data'].append(mover.copy())
                 mover['val'] = None
-                spaceListMap[space['count']].pop(0)
-                if len(spaceListMap[space['count']]) == 0:
-                    del spaceListMap[space['count']]
+                spaceListMap[space['count']].pop()
                 space['count'] -= mover['count']
                 if space['count'] > 0:
                     spaceListMap[space['count']].append(space)
-                    spaceListMap[space['count']].sort(key=lambda a: a['index'])
+                    spaceListMap[space['count']].sort(
+                        key=lambda a: a['index'], reverse=True)
 
         index, checksum = 0, 0
-        for entry in (a for b in (a['data'] + [a] for a in result) for a in b):
-            if entry['val'] is not None:
-                for i in range(entry['count']):
-                    checksum += entry['val']*(index+i)
-            index += entry['count']
+        for r in result:
+            for entry in (r['data'] + [r]):
+                if entry['val'] is not None:
+                    for i in range(entry['count']):
+                        checksum += entry['val']*(index+i)
+                index += entry['count']
 
         return checksum
 
