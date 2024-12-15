@@ -5,7 +5,8 @@ from os import path
 class Implementation:
 
     def __init__(self, dataPath: str):
-        pass
+        with open(dataPath, encoding="utf8") as reader:
+            pass
 
     def part1(self):
         raise NotImplementedError()
@@ -15,7 +16,8 @@ class Implementation:
 
 
 class TestCase(unittest.TestCase):
-    _pathPrefix = f"{path.dirname(__file__)}/data/{__name__}"
+    _filePrefix = path.basename(__file__).replace('.py', '')
+    _pathPrefix = f"{path.dirname(__file__)}/data/{_filePrefix}"
 
     def test_part1_ex(self):
         impl = Implementation(f'{self._pathPrefix}_example.txt')
