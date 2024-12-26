@@ -1,6 +1,5 @@
 import unittest
 from os import path
-from itertools import product
 
 
 class Implementation:
