@@ -25,7 +25,7 @@ class Implementation:
             return v if v < 4 else regs[comboRegVals[v]]
 
         while pc < len(program):
-            opCode, operand = program[pc], program[pc+1]
+            opCode, operand, pc = program[pc], program[pc+1], pc+2
             # ADV, BDV, CDV
             if opCode in (0, 6, 7):
                 regs[advRegMap[opCode]] = regs['A'] // 2 ** combo(operand)
@@ -41,8 +41,6 @@ class Implementation:
             # OUT
             elif opCode == 5:
                 outList.append(combo(operand) % 8)
-            if opCode != 3:
-                pc += 2
 
         return ','.join(str(a) for a in outList)
 
