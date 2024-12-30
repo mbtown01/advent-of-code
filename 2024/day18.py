@@ -1,7 +1,7 @@
 import unittest
 from os import path
 from collections import defaultdict
-from heapq import heappush, heappop, heapify
+from heapq import heappush, heappop
 
 NORTH, EAST, SOUTH, WEST = (-1, 0), (0, 1), (1, 0), (0, -1)
 
