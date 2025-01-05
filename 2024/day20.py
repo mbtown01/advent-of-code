@@ -13,14 +13,13 @@ class Implementation:
             self.gridMap = {(j, i): c
                             for j, line in enumerate(reader)
                             for i, c in enumerate(line.strip())}
-            self.allDirs = (NORTH, SOUTH, EAST, WEST)
 
         start = next(a[0] for a in self.gridMap.items() if a[1] == 'S')
         end = next(a[0] for a in self.gridMap.items() if a[1] == 'E')
         loc, track = start, [start]
 
         while loc != end:
-            for vec in self.allDirs:
+            for vec in (NORTH, SOUTH, EAST, WEST):
                 nextLoc = (loc[0]+vec[0], loc[1]+vec[1])
                 if nextLoc not in track and self.gridMap.get(nextLoc) in '.E':
                     track.append(nextLoc)
