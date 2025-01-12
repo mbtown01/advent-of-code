@@ -1,6 +1,5 @@
 import unittest
 from os import path
-from collections import defaultdict
 from functools import reduce
 from operator import mul
 
@@ -42,10 +41,6 @@ class Implementation:
                                grid.get((a[0]-1, a[1]), 0)
                                for a in grid)
             if clusterScore > 1000:
-                for y in range(extents[0]):
-                    line = list('#' if (y, x) in grid else ' '
-                                for x in range(extents[1]))
-                    print(f"[{y:03d}] {''.join(line)}")
                 return t
 
         raise RuntimeError('Never found a big enough cluster')

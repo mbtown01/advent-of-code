@@ -64,10 +64,9 @@ class Implementation:
                 elif '->' in line:
                     eqn, name = line.strip().split(' -> ')
                     w1Name, opName, w2Name = eqn.split(' ')
-                    wire = self.wireMap[name]
-                    wire.opName = opName
-                    for name in (w1Name, w2Name):
-                        wire.inputList.append(self.wireMap[name])
+                    self.wireMap[name].opName = opName
+                    for n in (w1Name, w2Name):
+                        self.wireMap[name].inputList.append(self.wireMap[n])
 
             for name, wire in self.wireMap.items():
                 wire.name = name
@@ -83,8 +82,7 @@ class Implementation:
                 key=lambda a: a.name)
 
     def findUnexpectedlySetBits(self, bit: int, x: int, y: int,
-                                badBitCounts: list, expectedSetBit: int, *,
-                                doPrint: bool = False):
+                                badBitCounts: list, expectedSetBit: int):
         for wire in self.wireMap.values():
             wire.reset()
         for i, (xWire, yWire) in enumerate(zip(self.xWires, self.yWires)):
@@ -93,21 +91,14 @@ class Implementation:
         for i, zWire in enumerate(self.zWires):
             if (zWire.eval() == 1) != (i == expectedSetBit):
                 badBitCounts[i] += 1
-                if doPrint:
-                    print(f"{i}: {x}+{y} expected {i == expectedSetBit} "
-                          f"got {i != expectedSetBit}")
 
-    def buildBadBitList(self, doPrint: bool = False):
+    def buildBadBitList(self):
         badBitCounts = [0] * len(self.xWires)
         for i in range(len(self.xWires)):
-            self.findUnexpectedlySetBits(
-                i, 0, 0, badBitCounts, -1, doPrint=doPrint)
-            self.findUnexpectedlySetBits(
-                i, 1, 0, badBitCounts, i, doPrint=doPrint)
-            self.findUnexpectedlySetBits(
-                i, 0, 1, badBitCounts, i, doPrint=doPrint)
-            self.findUnexpectedlySetBits(
-                i, 1, 1, badBitCounts, i+1, doPrint=doPrint)
+            self.findUnexpectedlySetBits(i, 0, 0, badBitCounts, -1)
+            self.findUnexpectedlySetBits(i, 1, 0, badBitCounts, i)
+            self.findUnexpectedlySetBits(i, 0, 1, badBitCounts, i)
+            self.findUnexpectedlySetBits(i, 1, 1, badBitCounts, i+1)
         return list(a for a, b in enumerate(badBitCounts) if b > 0)
 
     def part1(self):
@@ -142,7 +133,6 @@ class Implementation:
                     gateComboList = list(combinations(gateList, 2))
                 else:
                     w1.swap(w2)
-
             except Implementation.CycleDetectedError:
                 w1.swap(w2)
 
