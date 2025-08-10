@@ -23,19 +23,21 @@ def searchSmart(subset: list, value: int, targetSum: int = 2020):
     return searchSmart(subset[medianIndex:], value)
 
 
-with open('2020/day1.txt') as reader:
-    data = sorted(list(int(a) for a in reader.readlines()))
+if __name__ == '__main__':
 
-for i, a in enumerate(data):
-    b = searchSmart(data[i+1:], a)
-    if b is not None:
-        print(f"a={a}, b={b}, result={a*b}")
-        break
+    with open('2020/day1.txt') as reader:
+        data = sorted(list(int(a) for a in reader.readlines()))
 
-for i, a in enumerate(data):
-    for j, b in enumerate(data[i+1:]):
-        if a+b < 2020:
-            c = searchSmart(data[i+j+1:], a+b)
-            if c is not None:
-                print(f"a={a}, b={b}, c={c} result={a*b*c}")
-                break
+    for i, a in enumerate(data):
+        b = searchSmart(data[i+1:], a)
+        if b is not None:
+            print(f"a={a}, b={b}, result={a*b}")
+            break
+
+    for i, a in enumerate(data):
+        for j, b in enumerate(data[i+1:]):
+            if a+b < 2020:
+                c = searchSmart(data[i+j+1:], a+b)
+                if c is not None:
+                    print(f"a={a}, b={b}, c={c} result={a*b*c}")
+                    break

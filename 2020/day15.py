@@ -21,8 +21,10 @@ def play(numbers: list, maxTurn: int):
     return lastSpokenNumber
 
 
-with open('2020/day15.txt') as reader:
-    numbers = list(int(a) for a in reader.readline().strip().split(','))
+if __name__ == '__main__':
 
-print(f"part 1: {play(numbers, 2020)}")
-print(f"part 2: {play(numbers, 30000000)}")
+    with open('2020/day15.txt') as reader:
+        numbers = list(int(a) for a in reader.readline().strip().split(','))
+
+    print(f"part 1: {play(numbers, 2020)}")
+    print(f"part 2: {play(numbers, 30000000)}")

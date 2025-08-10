@@ -53,7 +53,7 @@ class Program:
             instruction.reset()
 
         runtimeContext = RuntimeContext()
-        while(runtimeContext.pc < len(self.instructions)):
+        while (runtimeContext.pc < len(self.instructions)):
             instruction = self.instructions[runtimeContext.pc]
             if instruction.order is not None:
                 return runtimeContext
@@ -85,9 +85,11 @@ class Program:
             print(f"[{i:-4d}] -> {instruction}")
 
 
-with open('2020/day8.txt') as reader:
-    allLines = list(a.strip() for a in reader.readlines())
+if __name__ == '__main__':
 
-program = Program(allLines)
-program.part1()
-program.part2()
+    with open('2020/day8.txt') as reader:
+        allLines = list(a.strip() for a in reader.readlines())
+
+    program = Program(allLines)
+    program.part1()
+    program.part2()

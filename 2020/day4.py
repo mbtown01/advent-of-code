@@ -1,8 +1,5 @@
 import re
 
-with open('2020/day4.txt') as reader:
-    allLines = list(a.strip() for a in reader.readlines())
-
 
 class BadPassportError(RuntimeError):
     pass
@@ -77,19 +74,24 @@ class Passport:
         validator.validatePid(self.keyValues['pid'])
 
 
-validator = Validator()
-validCount1, validCount2, startIndex = 0, 0, 0
-for index, line in enumerate(allLines):
-    if len(line) == 0 or index == len(allLines)-1:
-        passportText = ' '.join(allLines[startIndex:index])
-        startIndex = index+1
-        try:
-            passport = Passport(passportText)
-            validCount1 += 1
-            passport.validate(validator)
-            validCount2 += 1
-        except BadPassportError as ex:
-            pass
+if __name__ == '__main__':
 
-print(f"Valid passports: {validCount1}")
-print(f"Valid passport contents: {validCount2}")
+    with open('2020/day4.txt') as reader:
+        allLines = list(a.strip() for a in reader.readlines())
+
+    validator = Validator()
+    validCount1, validCount2, startIndex = 0, 0, 0
+    for index, line in enumerate(allLines):
+        if len(line) == 0 or index == len(allLines)-1:
+            passportText = ' '.join(allLines[startIndex:index])
+            startIndex = index+1
+            try:
+                passport = Passport(passportText)
+                validCount1 += 1
+                passport.validate(validator)
+                validCount2 += 1
+            except BadPassportError as ex:
+                pass
+
+    print(f"Valid passports: {validCount1}")
+    print(f"Valid passport contents: {validCount2}")

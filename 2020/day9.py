@@ -44,13 +44,15 @@ def findWeakness(numbers: list, value: int):
     raise RuntimeError(f"Value {value} never found")
 
 
-with open('2020/day9.txt') as reader:
-    numbers = list(int(a.strip()) for a in reader.readlines())
+if __name__ == '__main__':
 
-value = findInvalid(numbers, 25)
+    with open('2020/day9.txt') as reader:
+        numbers = list(int(a.strip()) for a in reader.readlines())
 
-print(f"part 1: value={value}")
+    value = findInvalid(numbers, 25)
 
-weakness = findWeakness(numbers, value)
+    print(f"part 1: value={value}")
 
-print(f"part 2: {weakness}")
+    weakness = findWeakness(numbers, value)
+
+    print(f"part 2: {weakness}")

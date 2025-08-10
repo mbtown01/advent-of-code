@@ -26,37 +26,37 @@ def bruteForce(length: int):
     return count
 
 
-with open('2020/day10.txt') as reader:
-    numbers = list(int(a.strip()) for a in reader.readlines())
+if __name__ == '__main__':
 
+    with open('2020/day10.txt') as reader:
+        numbers = list(int(a.strip()) for a in reader.readlines())
 
-sortedNumbers = sorted(numbers)
-sortedNumbers = [0, *sortedNumbers, max(sortedNumbers) + 3]
-deltas = list(
-    sortedNumbers[i] - sortedNumbers[i-1] for i in range(1, len(sortedNumbers)))
-deltaSumsMap = defaultdict(int)
-for value in deltas:
-    deltaSumsMap[value] += 1
+    sortedNumbers = sorted(numbers)
+    sortedNumbers = [0, *sortedNumbers, max(sortedNumbers) + 3]
+    deltas = list(
+        sortedNumbers[i] - sortedNumbers[i-1] for i in range(1, len(sortedNumbers)))
+    deltaSumsMap = defaultdict(int)
+    for value in deltas:
+        deltaSumsMap[value] += 1
 
-final1 = deltaSumsMap[3] * deltaSumsMap[1]
-print(f"part 1: {final1}")
+    final1 = deltaSumsMap[3] * deltaSumsMap[1]
+    print(f"part 1: {final1}")
 
-currentSequenceCount = 0
-final2 = 1
-for delta in deltas:
-    if delta == 1:
-        currentSequenceCount += 1
-    else:
-        if currentSequenceCount > 1:
-            final2 *= bruteForce(currentSequenceCount-1)
-        currentSequenceCount = 0
+    currentSequenceCount = 0
+    final2 = 1
+    for delta in deltas:
+        if delta == 1:
+            currentSequenceCount += 1
+        else:
+            if currentSequenceCount > 1:
+                final2 *= bruteForce(currentSequenceCount-1)
+            currentSequenceCount = 0
 
-print(f"part 2: {final2}")
+    print(f"part 2: {final2}")
 
+    for i in range(0, 8):
+        real = bruteForce(i+1)
+        test = testCombinations(i+1)
+        print(f"For i={i+1}, real={real}, test={test}, foo={2**(i+1)-real}")
 
-for i in range(0, 8):
-    real = bruteForce(i+1)
-    test = testCombinations(i+1)
-    print(f"For i={i+1}, real={real}, test={test}, foo={2**(i+1)-real}")
-
-print("done")
+    print("done")

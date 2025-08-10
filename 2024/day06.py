@@ -1,11 +1,5 @@
 import unittest
 from os import path
-from collections import defaultdict
-
-
-class Span():
-    def __init__(self):
-        self.locSet = set()
 
 
 class Implementation:
@@ -21,32 +15,38 @@ class Implementation:
                             for j, line in enumerate(reader)
                             for i, c in enumerate(line.strip())}
             self.start = next(a for a, b in self.gridMap.items() if b == '^')
-            self.extents = max(self.gridMap.keys())
+            # nj, ni = max(self.gridMap.keys())
 
-    def dumpGrid(self, grid: dict):
-        for j in range(self.extents[0]+1):
-            print(''.join(grid.get((j, i)) for i in range(self.extents[1]+1)))
+            # # Build a map storing the final destination of every point
+            # # on the grid given a direction.  Without obstacles, that map
+            # # shows falling off the grid in every direction
+            # self.newGridMap = dict()
+            # for loc, toVec in \
+            #         [((j, 0), (0, 1)) for j in range(nj)] + \
+            #         [((j, ni-1), (0, -1)) for j in range(nj)] + \
+            #         [((0, i), (1, 0)) for i in range(ni)] + \
+            #         [((nj-1, i), (-1, 0)) for i in range(ni)]:
+            #     fromVec = (-toVec[0], -toVec[1])
 
     def findPath(self, grid: dict):
-        pathMap, pathList = defaultdict(dict), list()
+        pathSet, pathList = set(), list()
         loc, vec = self.start, (-1, 0)
         while loc in grid:
             while grid.get((loc[0]+vec[0], loc[1]+vec[1])) == '#':
                 vec = self.nextVecMap[vec]
-            pathMap[loc][vec] = len(pathList)
+            pathSet.add((loc, vec))
             pathList.append((loc, vec))
             loc = (loc[0]+vec[0], loc[1]+vec[1])
-            if loc in pathMap and vec in pathMap[loc]:
+            if (loc, vec) in pathSet:
                 return None
-        return pathMap, pathList
+        return pathList
 
     def part1(self):
-        return len(self.findPath(self.gridMap)[0])
+        return len(set(a[0] for a in self.findPath(self.gridMap)))
 
     def part2(self):
-        obstructionMap, pathList = dict(), self.findPath(self.gridMap)[1]
-        for i, (loc, vec) in enumerate(pathList):
-            # print(f"next {i} of {len(pathList)}")
+        obstructionMap, pathList = dict(), self.findPath(self.gridMap)
+        for loc, vec in pathList:
             testLoc = (loc[0]+vec[0], loc[1]+vec[1])
             if self.gridMap.get(testLoc) == '.':
                 self.gridMap[testLoc] = '#'
@@ -54,12 +54,15 @@ class Implementation:
                 self.gridMap[testLoc] = '.'
                 if result is None:
                     obstructionMap[testLoc] = 'O'
+                elif testLoc in list(a[0] for a in result):
+                    print('well that did not work')
 
         return len(obstructionMap)
 
 
 class TestCase(unittest.TestCase):
-    _pathPrefix = f"{path.dirname(__file__)}/data/{__name__}"
+    _filePrefix = path.basename(__file__).replace('.py', '')
+    _pathPrefix = f"{path.dirname(__file__)}/data/{_filePrefix}"
 
     def test_part1_ex(self):
         impl = Implementation(f'{self._pathPrefix}_example.txt')
@@ -80,3 +83,7 @@ class TestCase(unittest.TestCase):
         impl = Implementation(f'{self._pathPrefix}_real.txt')
         result = impl.part2()
         self.assertEqual(result, 1604)
+
+
+if __name__ == '__main__':
+    TestCase().test_part2_real()
